@@ -1,5 +1,6 @@
 .terraform/
 .aws/
+dist/
 
 .terraform.*
 terraform.tfstate
