@@ -15,13 +15,13 @@ $ docker run --rm -it -v $(pwd)/.aws:/root/.aws amazon/aws-cli:latest configure
 
 ```shell
 # version 確認
-$ docker run --rm -it -v $(pwd):/workpace -v ~/.aws:/root/.aws:ro -w /workpace hashicorp/terraform:latest -version
+$ docker compose run init -version
 Terraform v1.5.3
 on linux_amd64
 # 初期化
-$ docker run --rm -it -v $(pwd):/workpace -v $(pwd)/.aws:/root/.aws:ro -w /workpace hashicorp/terraform:latest init
+$ docker compose run init
 # dry run
-$ docker run --rm -it -v $(pwd):/workpace -v $(pwd)/.aws:/root/.aws:ro -w /workpace hashicorp/terraform:latest plan
+$ docker compose run plan
 # 適応
-$ docker run --rm -it -v $(pwd):/workpace -v $(pwd)/.aws:/root/.aws:ro -w /workpace hashicorp/terraform:latest apply
+$ docker compose run apply
 ```

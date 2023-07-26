@@ -3,28 +3,42 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-# S3バケットを作成
-resource "aws_s3_bucket" "lambda_bucket" {
-  # ユニークなバケット名を指定してください
-  bucket = "nexe-bucket"
+variable "SLACK_SIGNING_SECRET" {
+  type    = string
+  default = "nothing"
+}
+
+variable "SLACK_BOT_TOKEN" {
+  type    = string
+  default = "nothing"
+}
+
+data "archive_file" "sample_function" {
+  type        = "zip"
+  source_dir  = "dist/js"
+  output_path = "dist/index.js.zip"
 }
 
 # Lambda関数を作成
-resource "aws_lambda_function" "example_lambda" {
+resource "aws_lambda_function" "lambda" {
   # ユニークな関数名を指定してください
   function_name = "nexe"
   role          = aws_iam_role.lambda_exec_role_attach_policy.arn
   # Node.jsランタイムを指定します
   runtime       = "nodejs18.x"
   # ハンドラは「ファイル名.エクスポート関数名」の形式で指定します
-  handler       = "src/index.handler"
+  handler       = "index.honi"
   # ZIPファイルのSHA256ハッシュ
-  source_code_hash = filebase64sha256("dist/index.js.zip")
+  source_code_hash = "${data.archive_file.sample_function.output_base64sha256}"
+  # アップロードする zip ファイルパス
+  filename  = "${data.archive_file.sample_function.output_path}"
 
-  # デプロイするコードのS3バケットとオブジェクトキーを指定します
-  s3_bucket = aws_s3_bucket.lambda_bucket.bucket
-  # ZIPファイルのオブジェクトキーを指定
-  s3_key    = "index.js.zip"
+  environment {
+    variables = {
+      SLACK_BOT_TOKEN = "${var.SLACK_BOT_TOKEN}"
+      SLACK_SIGNING_SECRET = "${var.SLACK_SIGNING_SECRET}"
+    }
+  }
 }
 
 # Lambda関数に対するIAMロールを作成
@@ -48,6 +62,11 @@ resource "aws_iam_role" "lambda_exec_role_attach_policy" {
 # Lambda関数にS3バケットへのアクセスを許可するIAMポリシーをアタッチ
 resource "aws_iam_role_policy_attachment" "lambda_s3_access" {
   # 適切なポリシーARNを指定してください
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   role       = aws_iam_role.lambda_exec_role_attach_policy.name
+}
+
+resource "aws_lambda_function_url" "aws_lambda_function_url" {
+  function_name      = aws_lambda_function.lambda.function_name
+  authorization_type = "NONE"
 }
