@@ -15,13 +15,13 @@ $ docker run --rm -it -v $(pwd)/.aws:/root/.aws amazon/aws-cli:latest configure
 
 ```shell
 # version 確認
-$ docker compose run init -version
+$ docker compose run terraform init -version
 Terraform v1.5.3
 on linux_amd64
 # 初期化
-$ docker compose run init
+$ docker compose run terraform init
 # dry run
-$ docker compose run plan
+$ docker compose run terraform plan
 # 適応
-$ docker compose run apply
+$ docker compose run terraform apply
 ```
